@@ -4,12 +4,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vaadin.event.dd.acceptcriteria.ClientSideCriterion;
+
 import lombok.val;
 
 public class TestClient {
 	
     BDSource bdSource = new BDSource();	
     private static final String TEMPLATE_FOR_FIND = "select * from client where passport = %s";
+    
+   
 		  
 	public static Client getTestClient() {
 		Client testPerson = new Client();
@@ -22,6 +26,7 @@ public class TestClient {
 		return testPerson;
 	}	  
    
+	
 	
 	public boolean getClientPassport(String passport) throws ClassNotFoundException, SQLException {
 		

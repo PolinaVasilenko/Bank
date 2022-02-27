@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import org.postgresql.replication.fluent.ChainedCommonCreateSlotBuilder;
 
@@ -20,9 +22,12 @@ public class BDSource {
 	private static final String TEMPLATE_FOR_FIND = "select * from client where passport = '%s'";
 	private static final String TEMPLATE_FOR_FINDSURNAME = "select * from client where surname = %s";
 	
-	private static final String TEMPLATE_FIND_BODYLOAN_STRING = "select summ_bodyloan from loan_offer where id_client = '%d'";
-	private static final String TEMPLATE_FIND_SUMMPERCENT = "select summ_percent from loan_offer where id_client = '%d'";
+	private static final String MASKFORLOAN= " '%s'"; 
 	
+	//private static final String TEMPLATE_FIND_BODYLOAN_STRING = "select summ_bodyloan from loan_offer where id_client = '%d'";
+	//private static final String TEMPLATE_FIND_SUMMPERCENT = "select summ_percent from loan_offer where id_client = '%d'";
+	
+	private static final String TEMPLATE_RECEIVEINDOLOAN = "select * from loan_offer where id_client in (%s)";
 	
 	private static final String CONNECTION_STR = "jdbc:postgresql://127.0.0.1:5432/finance";
 	private static final String CONNECTION_USERNAME = "postgres";
@@ -32,7 +37,7 @@ public class BDSource {
 		
 		//val sqlFindSurname = TEMPLATE_FOR_FINDSURNAME; 
 		val sqlVal = String.format(TEMPLATE_FOR_FINDSURNAME, fio);
-		return getClient(sqlVal);
+		return getClients(sqlVal);
 	}
 	
 	public List<Client> getClientNumerPassport(String passport) {
@@ -41,15 +46,15 @@ public class BDSource {
 		
 		val sqlVal = String.format(TEMPLATE_FOR_FIND, passport);
 		
-		return getClient(sqlVal);
+		return getClients(sqlVal);
 		
 		
 	}
 
     
-    public List<Client> getClient(String sql)  {
+    public List<Client> getClients(String sql)  {
     	
-    	System.out.println(sql);
+    	//System.out.println(sql);
 
 		try {
 			Class.forName("org.postgresql.Driver");
@@ -125,28 +130,52 @@ public class BDSource {
     	
     } 
     
-    public void findFinalSummPercent(LoanOffer loanOffer) {
+    public List<LoanOffer> receiveInfoLoan(List<Client> clients) {
+    	
+    	List<LoanOffer> listLoanOffers = new ArrayList<>();
     	
     try (Connection conn = DriverManager.getConnection(CONNECTION_STR, CONNECTION_USERNAME, CONNECTION_PASSWORD)){
     		
     		Statement statement = conn.createStatement();
     		
-    		val sqlbodyloan = TEMPLATE_FIND_BODYLOAN_STRING;
-    		val sqlSummPercent = TEMPLATE_FIND_SUMMPERCENT;
+           //
+    		val stringJoiner = new StringJoiner(",");     		
     		
-    		val bodyLoan =  String.format(sqlbodyloan, loanOffer.getSummBodyloan());
-    		val sumPercent = String.format(sqlSummPercent, loanOffer.getSummPercent());
+    		 clients.stream().forEach(client -> stringJoiner.add(String.format(MASKFORLOAN, client.getId() )));
+    		 val idClients = stringJoiner.toString();
     		
-    		val finalSummPercentLoan =  bodyLoan + sumPercent;
+    		String sql = String.format(TEMPLATE_RECEIVEINDOLOAN, idClients);
+    		System.out.println("sql!!! " + sql );
     		
-    		System.out.println("finalSummPercentLoan!!!!" + finalSummPercentLoan);
     		
     		
+    		ResultSet resultSet = statement.executeQuery(sql);   		
+    		
+    		
+    		System.out.println("LoanOffer sql: "+sql);
+    		
+    		
+			while (resultSet.next()) {	
+				LoanOffer loanOffer = new LoanOffer();
+				loanOffer.setIdLoan(resultSet.getInt(1));
+				loanOffer.setIdClient(resultSet.getInt(2));
+				loanOffer.setDateLoan(resultSet.getDate(3));
+				loanOffer.setSummPayment(resultSet.getDouble(4));
+				loanOffer.setSummBodyloan(resultSet.getDouble(5));
+				loanOffer.setSummPercent(resultSet.getDouble(6));
+				loanOffer.setContinueOffer(resultSet.getDouble(7));
+				listLoanOffers.add(loanOffer);
+			}
+			
+			
+			
+    		System.out.println(listLoanOffers);
     		
          } catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	return listLoanOffers;
     }
  }
 

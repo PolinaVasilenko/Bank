@@ -1,5 +1,8 @@
 package com.haulmont.testtask.test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 
 import com.haulmont.testtask.BDSource;
@@ -13,8 +16,18 @@ public class Test {
 	public static void main(String[] args) {
 		
 		BDSource bdSource = new BDSource();
-		Client clientTest = getClientUsePassport(bdSource);
-		deleteClientUsePassport(bdSource, clientTest);
+		//Client clientTest = getClientUsePassport(bdSource);
+		//String sql = "select * from loan_offer where id_client = '6'";
+		
+		//deleteClientUsePassport(bdSource, clientTest);
+		
+		//List<Client> listOfClients = new ArrayList<Client>();
+		
+		String sqlgetClients = "select * from client";
+		
+		val resaltList = bdSource.getClients(sqlgetClients);
+		System.out.println("resaltList" + resaltList);
+		bdSource.receiveInfoLoan(resaltList);
 
 	}
 
@@ -42,13 +55,10 @@ public class Test {
 		
 	}
 	
-	private static LoanOffer findFinalSummPercent(BDSource bdSource) {
-		
-		LoanOffer loanOffer = new LoanOffer();
-		
-		int idClient = 2;
-		
-		return loanOffer.;
-		
-	}
+//	private static void receiveInfoLoan(BDSource bdSource, Client clientTest) {
+//		LoanOffer loanOffer = new LoanOffer();
+//		
+//		System.out.println(loanOffer);	
+//		
+//	}
 }
