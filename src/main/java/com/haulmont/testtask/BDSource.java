@@ -138,21 +138,14 @@ public class BDSource {
     		
     		Statement statement = conn.createStatement();
     		
-           //
     		val stringJoiner = new StringJoiner(",");     		
     		
     		 clients.stream().forEach(client -> stringJoiner.add(String.format(MASKFORLOAN, client.getId() )));
     		 val idClients = stringJoiner.toString();
     		
     		String sql = String.format(TEMPLATE_RECEIVEINDOLOAN, idClients);
-    		System.out.println("sql!!! " + sql );
-    		
-    		
     		
     		ResultSet resultSet = statement.executeQuery(sql);   		
-    		
-    		
-    		System.out.println("LoanOffer sql: "+sql);
     		
     		
 			while (resultSet.next()) {	

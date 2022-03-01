@@ -8,14 +8,19 @@ import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import com.haulmont.testtask.BDSource;
 import com.haulmont.testtask.Client;
 import com.haulmont.testtask.LoanOffer;
+import com.haulmont.testtask.calculation.CalculationData;
+import com.haulmont.testtask.calculation.CalculationPercentLoan;
 
+import lombok.Data;
 import lombok.val;
 
+@Data
 public class Test {
 
 	public static void main(String[] args) {
 		
 		BDSource bdSource = new BDSource();
+		CalculationData calculationData = new CalculationData();
 		//Client clientTest = getClientUsePassport(bdSource);
 		//String sql = "select * from loan_offer where id_client = '6'";
 		
@@ -26,8 +31,11 @@ public class Test {
 		String sqlgetClients = "select * from client";
 		
 		val resaltList = bdSource.getClients(sqlgetClients);
+		
 		System.out.println("resaltList" + resaltList);
-		bdSource.receiveInfoLoan(resaltList);
+		val listVal = bdSource.receiveInfoLoan(resaltList);
+		
+		calculationData.getPercentLoan(listVal);
 
 	}
 
